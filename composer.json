@@ -1,0 +1,48 @@
+{
+  "name": "nicodinus/amphp2-file-additionals",
+  "homepage": "https://github.com/nicodinus/amphp2-file-additionals",
+  "description": "Some useful functions for amphp/file:^2",
+  "license": "MIT",
+  "support": {
+	"issues": "https://github.com/nicodinus/amphp2-file-additionals/issues"
+  },
+  "authors": [
+	{
+	  "name": "Aleksei Iarovoi",
+	  "email": "nicodinus@yandex.ru"
+	}
+  ],
+  "require": {
+	"php": ">=7.4",
+	"amphp/amp": "^2.6",
+    "amphp/file": "^2"
+  },
+  "require-dev": {
+	"amphp/phpunit-util": "^2",
+	"phpunit/phpunit": "^9.5",
+	"nicodinus/php-cs-fixer-config": "dev-master",
+    "vimeo/psalm": "^4.26"
+  },
+  "autoload": {
+	"psr-4": {
+	  "Amp\\File\\Additionals\\": "src"
+	},
+    "files": ["src/helpers.php"]
+  },
+  "autoload-dev": {
+	"psr-4": {
+	  "Amp\\File\\Additionals\\Test\\": "tests"
+	}
+  },
+  "scripts": {
+    "check": [
+      "@cs",
+      "@psalm",
+      "@test"
+    ],
+    "cs": "PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer --diff --dry-run -v fix",
+    "cs-fix": "PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer --diff -v fix",
+    "psalm": "./vendor/bin/psalm",
+    "test": "@php -dzend.assertions=1 -dassert.exception=1 ./vendor/bin/phpunit"
+  }
+}
