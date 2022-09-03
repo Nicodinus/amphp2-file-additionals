@@ -187,7 +187,14 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
 
             try {
                 while (!$fhSourceReader->eof()) {
-                    yield $fhTargetWriter->write(yield $fhSourceReader->read());
+                    /** @var string|null $data */
+                    $data = yield $fhSourceReader->read();
+
+                    if ($data === null) {
+                        break;
+                    }
+
+                    yield $fhTargetWriter->write($data);
                 }
 
                 $fhSourceReader->close();
