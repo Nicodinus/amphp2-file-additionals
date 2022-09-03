@@ -111,11 +111,16 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
 
         foreach (\array_reverse($directoryEntryLevels, true) as $arr) {
             foreach ($arr as $v) {
+                if (false === yield $filesystem->isDirectory($sourcePath . $v)) {
+                    continue;
+                }
                 yield $filesystem->deleteDirectory($sourcePath . $v);
             }
         }
 
-        yield $filesystem->deleteDirectory($sourcePath);
+        if (true === yield $filesystem->isDirectory($sourcePath)) {
+            yield $filesystem->deleteDirectory($sourcePath);
+        }
     }, $filesystem, $path);
 }
 
