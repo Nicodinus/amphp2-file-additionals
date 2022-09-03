@@ -161,29 +161,11 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
             yield $targetFilesystem->createDirectoryRecursively($targetPath, 0750);
         }
 
-        $symlinks = [];
-
-        $iterator = recursiveDirectoryListing($sourceFilesystem, $sourcePath);
-        while (true === yield $iterator->advance()) {
-            /** @var array $item */
-            $item = $iterator->getCurrent();
-
-            if (isset($item['follow_symlink'])) {
-                $symlinks[] = $item;
-                continue;
-            }
-
-            if (isset($item['is_directory'])) {
-                if (false === yield $targetFilesystem->isDirectory($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'])) {
-                    yield $targetFilesystem->createDirectoryRecursively($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'], 0750);
-                }
-                continue;
-            }
-
+        $copyFile = static function (string $sourcePath, Filesystem $sourceFilesystem, string $targetPath, Filesystem $targetFilesystem): \Generator {
             /** @var File $fhSourceReader */
-            $fhSourceReader = yield $sourceFilesystem->openFile($sourcePath . DIRECTORY_SEPARATOR . $item['relative_path'], 'rb');
+            $fhSourceReader = yield $sourceFilesystem->openFile($sourcePath, 'rb');
             /** @var File $fhTargetWriter */
-            $fhTargetWriter = yield $targetFilesystem->openFile($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'], 'wb');
+            $fhTargetWriter = yield $targetFilesystem->openFile($targetPath, 'wb');
 
             try {
                 while (!$fhSourceReader->eof()) {
@@ -203,12 +185,39 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
                 $fhSourceReader->close();
                 $fhTargetWriter->close();
 
-                if (true === yield $targetFilesystem->isFile($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'])) {
-                    yield $targetFilesystem->deleteFile($targetPath . DIRECTORY_SEPARATOR . $item['relative_path']);
+                if (true === yield $targetFilesystem->isFile($targetPath)) {
+                    yield $targetFilesystem->deleteFile($targetPath);
                 }
 
                 throw $exception;
             }
+        };
+
+        if (true === yield $sourceFilesystem->isFile($sourcePath)) {
+            yield call($copyFile, $sourcePath, $sourceFilesystem, $targetPath, $targetFilesystem);
+            return;
+        }
+
+        $symlinks = [];
+
+        $iterator = recursiveDirectoryListing($sourceFilesystem, $sourcePath);
+        while (true === yield $iterator->advance()) {
+            /** @var array $item */
+            $item = $iterator->getCurrent();
+
+            if (isset($item['follow_symlink'])) {
+                $symlinks[] = $item;
+                continue;
+            }
+
+            if (isset($item['is_directory'])) {
+                if (false === yield $targetFilesystem->isDirectory($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'])) {
+                    yield $targetFilesystem->createDirectoryRecursively($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'], 0750);
+                }
+                continue;
+            }
+
+            yield call($copyFile, $sourcePath . DIRECTORY_SEPARATOR . $item['relative_path'], $sourceFilesystem, $targetPath . DIRECTORY_SEPARATOR . $item['relative_path'], $targetFilesystem);
         }
 
         foreach ($symlinks as $item) {
