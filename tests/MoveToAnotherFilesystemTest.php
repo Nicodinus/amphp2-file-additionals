@@ -2,8 +2,8 @@
 
 namespace Amp\File\Additionals\Test;
 
-use Amp\PHPUnit\AsyncTestCase;
 use Amp\File;
+use Amp\PHPUnit\AsyncTestCase;
 use function Amp\Iterator\toArray;
 
 class MoveToAnotherFilesystemTest extends AsyncTestCase
@@ -57,9 +57,7 @@ class MoveToAnotherFilesystemTest extends AsyncTestCase
         }
 
         foreach ($this->getTestData() as $testDataItem) {
-
-            switch ($testDataItem['type'])
-            {
+            switch ($testDataItem['type']) {
                 case 'directory':
                     if (true === yield $this->getFilesystem()->exists($this->getTempPath() . $testDataItem['path'])) {
                         break;
@@ -81,7 +79,6 @@ class MoveToAnotherFilesystemTest extends AsyncTestCase
                 default:
                     throw new \Error("Invalid testData item!");
             }
-
         }
     }
 
@@ -119,18 +116,15 @@ class MoveToAnotherFilesystemTest extends AsyncTestCase
         $targetPath = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'testMoveToAnotherFilesystemResult';
 
         try {
-
             yield File\Additionals\moveToAnotherFilesystem($this->getTempPath(), $this->getFilesystem(), $targetPath, $this->getFilesystem());
 
             $iterator = File\Additionals\recursiveDirectoryListing($this->getFilesystem(), $this->getTempPath());
             $result = yield toArray($iterator);
 
             $this->assertSameSize($this->getTestData(), $result);
-
         } finally {
             yield File\Additionals\recursiveDeleteDirectory($this->getFilesystem(), $targetPath);
         }
-
     }
 
     /**

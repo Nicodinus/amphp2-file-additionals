@@ -23,15 +23,12 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
     $emitter = new Emitter();
 
     asyncCall(static function (Filesystem $filesystem, string $sourcePath) use (&$emitter) {
-
         $sourcePath = \str_replace('//', '/', $sourcePath . DIRECTORY_SEPARATOR);
 
         try {
-
             $queue = yield $filesystem->listFiles($sourcePath);
 
             do {
-
                 $relativePath = \array_shift($queue);
                 $fullPath = \str_replace('//', '/', $sourcePath . $relativePath);
 
@@ -64,9 +61,7 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
                         \array_unshift($queue, $relativePath . DIRECTORY_SEPARATOR . $subPath);
                     }
                 }
-
             } while (\sizeof($queue) > 0);
-
         } catch (Throwable $exception) {
             $emitter->fail($exception);
         } finally {
@@ -86,14 +81,12 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
 function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
 {
     return call(static function (Filesystem $filesystem, string $sourcePath) {
-
         $sourcePath = \str_replace('//', '/', $sourcePath . DIRECTORY_SEPARATOR);
 
         $directoryEntryLevels = [];
 
         $iterator = recursiveDirectoryListing($filesystem, $sourcePath);
         while (true === yield $iterator->advance()) {
-
             /** @var array $item */
             $item = $iterator->getCurrent();
 
@@ -109,7 +102,6 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
 
                 $directoryEntryLevels[$directoryEntryLevel][] = $item['relative_path'];
             }
-
         }
 
         foreach (\array_reverse($directoryEntryLevels, true) as $arr) {
@@ -119,7 +111,6 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
         }
 
         yield $filesystem->deleteDirectory($sourcePath);
-
     }, $filesystem, $path);
 }
 
@@ -132,7 +123,6 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
 function checkIsEqualFilesystems(Filesystem $source, Filesystem $target): Promise
 {
     return call(static function () use ($source, $target) {
-
         $tmpFile = \tempnam(\sys_get_temp_dir(), 'tmp-');
         $tmpContent = \uniqid();
 
@@ -143,7 +133,6 @@ function checkIsEqualFilesystems(Filesystem $source, Filesystem $target): Promis
         } finally {
             yield $source->deleteFile($tmpFile);
         }
-
     });
 }
 
@@ -158,7 +147,6 @@ function checkIsEqualFilesystems(Filesystem $source, Filesystem $target): Promis
 function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesystem, string $targetPath, Filesystem $targetFilesystem): Promise
 {
     return call(static function () use ($sourcePath, $sourceFilesystem, $targetPath, $targetFilesystem) {
-
         if (false === yield $sourceFilesystem->exists($sourcePath)) {
             throw new FilesystemException("Can't find source path {$sourcePath}");
         }
@@ -177,7 +165,6 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
 
         $iterator = recursiveDirectoryListing($sourceFilesystem, $sourcePath);
         while (true === yield $iterator->advance()) {
-
             /** @var array $item */
             $item = $iterator->getCurrent();
 
@@ -199,16 +186,13 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
             $fhTargetWriter = yield $targetFilesystem->openFile($targetPath . DIRECTORY_SEPARATOR . $item['relative_path'], 'wb');
 
             try {
-
                 while (!$fhSourceReader->eof()) {
                     yield $fhTargetWriter->write(yield $fhSourceReader->read());
                 }
 
                 $fhSourceReader->close();
                 $fhTargetWriter->close();
-
             } catch (Throwable $exception) {
-
                 $fhSourceReader->close();
                 $fhTargetWriter->close();
 
@@ -217,15 +201,12 @@ function moveToAnotherFilesystem(string $sourcePath, Filesystem $sourceFilesyste
                 }
 
                 throw $exception;
-
             }
-
         }
 
         foreach ($symlinks as $item) {
             $original = \str_replace($sourcePath, $targetPath, $item['follow_symlink']);
             yield $targetFilesystem->createSymlink($original, $targetPath . DIRECTORY_SEPARATOR .  $item['relative_path']);
         }
-
     });
 }

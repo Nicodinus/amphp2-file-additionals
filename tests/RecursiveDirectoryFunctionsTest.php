@@ -2,8 +2,8 @@
 
 namespace Amp\File\Additionals\Test;
 
-use Amp\PHPUnit\AsyncTestCase;
 use Amp\File;
+use Amp\PHPUnit\AsyncTestCase;
 use function Amp\Iterator\toArray;
 
 class RecursiveDirectoryFunctionsTest extends AsyncTestCase
@@ -57,9 +57,7 @@ class RecursiveDirectoryFunctionsTest extends AsyncTestCase
         }
 
         foreach ($this->getTestData() as $testDataItem) {
-
-            switch ($testDataItem['type'])
-            {
+            switch ($testDataItem['type']) {
                 case 'directory':
                     if (true === yield $this->getFilesystem()->exists($this->getTempPath() . $testDataItem['path'])) {
                         break;
@@ -81,7 +79,6 @@ class RecursiveDirectoryFunctionsTest extends AsyncTestCase
                 default:
                     throw new \Error("Invalid testData item!");
             }
-
         }
     }
 

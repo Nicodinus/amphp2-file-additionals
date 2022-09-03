@@ -2,8 +2,8 @@
 
 namespace Amp\File\Additionals\Test;
 
-use Amp\PHPUnit\AsyncTestCase;
 use Amp\File;
+use Amp\PHPUnit\AsyncTestCase;
 use Amp\Success;
 
 class CheckIsEqualFilesystemsTest extends AsyncTestCase
