@@ -83,6 +83,11 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
     return call(static function (Filesystem $filesystem, string $sourcePath) {
         $sourcePath = \str_replace('//', '/', $sourcePath . DIRECTORY_SEPARATOR);
 
+        if (true === yield $filesystem->isFile($sourcePath)) {
+            yield $filesystem->deleteFile($sourcePath);
+            return;
+        }
+
         $directoryEntryLevels = [];
 
         $iterator = recursiveDirectoryListing($filesystem, $sourcePath);
