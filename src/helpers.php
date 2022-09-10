@@ -28,7 +28,7 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
         try {
             $queue = yield $filesystem->listFiles($sourcePath);
 
-            do {
+            while (\sizeof($queue) > 0) {
                 $relativePath = \array_shift($queue);
                 $fullPath = \str_replace('//', '/', $sourcePath . $relativePath);
 
@@ -61,7 +61,7 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
                         \array_unshift($queue, $relativePath . DIRECTORY_SEPARATOR . $subPath);
                     }
                 }
-            } while (\sizeof($queue) > 0);
+            }
         } catch (Throwable $exception) {
             $emitter->fail($exception);
         } finally {
