@@ -26,6 +26,10 @@ function recursiveDirectoryListing(Filesystem $filesystem, string $path): Iterat
         $sourcePath = \str_replace('//', '/', $sourcePath . DIRECTORY_SEPARATOR);
 
         try {
+            if (false === (yield ($filesystem->isDirectory($sourcePath)))) {
+                throw new FilesystemException("Path {$sourcePath} is not valid directory");
+            }
+
             $queue = yield $filesystem->listFiles($sourcePath);
 
             while (\sizeof($queue) > 0) {
@@ -82,11 +86,6 @@ function recursiveDeleteDirectory(Filesystem $filesystem, string $path): Promise
 {
     return call(static function (Filesystem $filesystem, string $sourcePath) {
         $sourcePath = \str_replace('//', '/', $sourcePath . DIRECTORY_SEPARATOR);
-
-        if (true === yield $filesystem->isFile($sourcePath)) {
-            yield $filesystem->deleteFile($sourcePath);
-            return;
-        }
 
         $directoryEntryLevels = [];
 
